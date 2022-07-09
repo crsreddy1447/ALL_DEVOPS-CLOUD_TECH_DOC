@@ -1,0 +1,68 @@
+Continous Delivery(CD): (Release Pipeline)
+------------------------------------------
+1)Need to create Release pipeline for continous delivery(CD)
+Goto Pipelines -> click Releases -> click New Pipeline
+2)There we can see two items 'Add an Artifact' and 'Add a Stage'
+
+Adding Artifacts:
+----------------
+3)click Add and Artifact and enter the below details
+		- Project : select your project from dropdown
+		- Source(build pipeline) : select your latest build pipeline
+		- Default version : Latest
+		- Project Alias : give same as build pipeline name or enter as u like
+		- click on Add
+		
+Adding Stages(Environments):
+---------------------------
+4)Click Add -> Click New Stage -> click Empty job -> Enter Stage name as DIT
+5)Click Add -> Click New Stage -> click Empty job -> Enter Stage name as SIT
+6)Click Add -> Click New Stage -> click Empty job -> Enter Stage name as PERF
+7)Click Add -> Click New Stage -> click Empty job -> Enter Stage name as UAT
+8)Click Add -> Click New Stage -> click Empty job -> Enter Stage name as PROD
+
+Note: Here inter-linking between all stages(environments) to deploy one-after-one, so we need to remove the link by selecting manual option.
+
+9)Click Pre-deploy conditions(thunder & user symbol) of DIT -> Select Manual only
+10)Click Pre-deploy conditions(thunder & user symbol) of SIT -> Select Manual only
+11)Click Pre-deploy conditions(thunder & user symbol) of PERF -> Select Manual only
+12)Click Pre-deploy conditions(thunder & user symbol) of UAT -> Select Manual only
+13)Click Pre-deploy conditions(thunder & user symbol) of PROD -> Select Manual only
+
+14)click on view stage tasks(1job, 0task) -> change the pipeline name 'SmartStore-July-Release'
+15)click on Agent Job -> select Agent pool from dropdown -> click save
+16)Select DIT -> click Create release -> select latest version on build pipeline -> click create then Release release-1 is created
+17)Click on Release-1 -> Click on Deploy at DIT -> click Deploy -> click view logs at DIT to see the progress
+18)Agent job Succeded -> click on Download Artifact to see the logs where these downloaded artficats saved (C:\Practise_Agent_Workspace\r1\a/Practise_SmartStore-CI/DeploySmartStorePackages)
+
+Adding Pre-deploy Approvals:
+---------------------------
+19)click Edit -> Edit Pipeline -> Click Pre-deploy conditions(thunder & user symbol) of DIT -> Enable the Pre-deploy Approvals
+    -> Enter the approval email and select -> click on save and ok
+20)click Create release -> click create the Release release-2 is created
+21)Click on Release-2 -> Click on Deploy at DIT -> It will show pending for approval -> once approver approved -> Deployment startes automatically
+Note: Apporver will gets mail for approval
+
+Adding Tasks for DIT:
+--------------------
+22)click Edit -> Edit Pipeline -> click on tasks tab 
+23)click on plus(+) symbol at Agent job -> Search 'Extract Files' in search bar of Add tasks -> select Extract files in display list -> click Add
+24)Select Extract Files task and enter the below details
+		- Archieve file patterns :Practise_SmartStore-CI/DeploySmartStorePackages/SmartStore.Web.zip (selecting single proj for now)
+		- select destination folder: C:\SmartStoreWeb
+		- click save and ok
+25)click on plus(+) symbol at Agent job -> Search 'IIS web app manage' in search bar of Add tasks -> select IIS web app manage in display list -> click Add
+26)Select Manage IISwebsite task and enter the below details
+		- Action : Create Or Update
+		- Website Name : SmartStore
+		- Physical Path : C:\SmartStoreWeb
+		- Select Add Bidings 
+		- Select Create or update app pool
+		- click on 3dots at Add Bidings -> Enter the port as 90 -> click ok
+		- IIS Application Pool -> Enter name : SmartStoreWeb and keep remaining same
+		-  click save and ok
+		
+27)Select DIT -> Click create release -> click create then Release release-3 is created
+28)click release-3 -> Click on Deploy at DIT -> it will ask for pre-approval pending -> once approver approved -> Deployment startes automatically
+Note: Here is a chance we will override the approval.
+29)Deployment in DIT succeded -> check in IIS whether our website and Application pool created or not.

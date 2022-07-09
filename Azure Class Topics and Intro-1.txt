@@ -1,0 +1,542 @@
+Course AZ-104T00-A: Microsoft Azure Administrator 
+
+#######################Module 1 : Azure Administration################################
+
+1. Azure Resource Manager: 
+Azure Resource Manager is the deployment and management service for Azure. It provides a management layer that enables you to create, update, and delete resources in your Azure account.
+When a user sends a request from any of the Azure tools Resource Manager receives the request. It authenticates and authorizes the request. Resource Manager sends the request to the Azure service, which takes the requested action.
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview   --- Diagram
+Resource Manager template - A JavaScript Object Notation (JSON) file that defines one or more resources to deploy to a resource group, subscription, management group, or tenant.
+
+The benefits of using Resource Manager:
+Manage your infrastructure through declarative templates 
+Deploy, manage, and monitor all the resources for your solution as a group
+Define the dependencies between resources
+Redeploy your solution 
+Apply tags to resources to logically organize all the resources
+
+Azure provides four levels of scope: 
+management groups, 
+subscriptions, 
+resource groups, and 
+resources. 
+
+ARM Templates:
+ARM Templates are a way to declare the objects you want, the types, names and properties in a JSON file which can be checked into source control and managed like any other code file. 
+ARM Templates are what really gives us the ability to roll out Azure “Infrastructure as code”.
+It consists of 
+$schema: Location of the JSON schema file
+parameters, variables, functions, resources, Output
+
+
+********************************************************************************************
+
+###########################Module 2 : Virtual Networking###############################
+
+IP Addressing
+IP-V-4-32 BIT.- 4 boxes - EACH BOX IS 8 BIT ie 2power8 = 2^8 =256 =0-255
+---> A   1 TO 126 ---> B   128 TO 191 ---> C   192 TO 223
+Class       Address Mask 
+
+A   1-126 --> default subnet mask= 255.0.0.0   
+Class A has 126 networks (27-2) and 16777214 hosts (224-2) host addresses
+IP starting from 1.x.x.x to 126.x.x.x only
+
+B   128-191 --> default subnet mask=.255.0.0 
+Class B has 16384 (214) Network addresses and 65534 (216-2) Host addresses
+IP Addresses range from 128.0.x.x to 191.255.x.x.
+
+C   192-223 --> default subnet mask= 255.255.255.0 
+Class C IP addresses range from 192.0.0.x to 223.255.255.x.
+Class C gives 2097152 (221) Network addresses and 254 (28-2) Host addresses.
+
+Class D IP address range from 224.0.0.0 to 239.255.255.255. Class D is reserved for Multicasting.
+
+Class E is reserved for experimental purposes only for R&D or Study. class ranges from 240.0.0.0 to 255.255.255.254
+
+Network Security groups
+Inbound and Outbound rules. Can be used at subnet level or VM level.
+You can associate an NSG with a subnet or the network interface of an Azure VM
+
+Azure Firewall
+Azure Firewall is a managed, cloud-based network security service that protects your Azure Virtual Network resources
+Azure Firewall uses a static public IP address for your virtual network resources allowing outside firewalls to identify traffic originating from your virtual network.
+
+AzureFirewallSubnet - the firewall is in this subnet.
+
+Deploy and configure Azure Firewall using the Azure portal
+https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
+Subnet name type AzureFirewallSubnet
+Firewall
+Routes table and Routes For Address prefix, type 0.0.0.0/0. select Virtual appliance. Next hop address, type the private IP address for the firewall
+Application rule collection -- add FQDNs, ports: http, https. For Target FQDNS, www.google.com
+Here VM with private Ip communicate with Internet via Jumpbox and Azure Firewall IP.
+
+AZURE Firewall vs Azure NSG
+An NSG is a firewall filters traffic at the Network layer. 
+Azure Firewall is a managed firewall service that can filter and analyze L3-L4 traffic, as well as L7 application traffic.
+
+
+
+
+*******************************************************************************************
+
+#############################Module 3: Intersite Connectivity#############################
+
+**************VNet Peering**************
+Azure supports the following types of peering:
+1.Virtual network peering: Connect virtual networks within the same Azure region.
+2.Global virtual network peering: Connecting virtual networks across Azure regions.
+Network traffic between peered virtual networks is private. No public Internet, gateways, or encryption is required in the communication between the virtual networks.
+*** VNet Peering can be done in Same subscription. If networks are not present in same subscription. VNet Peering not possible.
+If two subscription belong to same root account then move the move peering to same subscription.
+**** Tools: Peering
+RG > EAST US VNET > PEERING > NAME - EASTUSTO WEST > SELECT WESTUS VNET> DEFINE NAME - WESTUSTOEAST >OK
+
+**************VNET TO VNET*********************** 
+Virtual networks can be in different regions and from different subscriptions.
+tools: GATEWAY SUBNET-2, VIRTULAL NETWORK GATEWAY-2, CONNECTTIONS-2 > ADD> SELECT VNET TO VNET
+
+*******POINT TO SITE********
+A Point-to-Site (P2S) VPN gateway lets you create a secure connection to your Azure virtual network from an individual client computer, Point-to-Site VPN connections are useful when you want to connect to your Azure VNet from remote locations such as your home or hotel.
+P2S VPN is also a useful solution to use instead of S2S VPN when you have only a few clients that need to connect to a VNet.
+This type of connection is made through SSTP (Secure Sockets Tunnel Protocol). It allows you to configure an interconnection to the Azure Network individually, from a specific Client Team, in order to access its resources.
+Point-to-Site connections do not need a VPN dial-up device but work with a VPN client installed on the Device. However, only such equipment can connect to Azure resources. In the case that there are several teams that need access to these resources, each of them must mark a Point-to-Site VPN.
+
+Virtual Private Network (VPN) device:
+It is a device or service that provides external connectivity to the local area network. The Virtual Private Network (or VPN) device can be a hardware device or a software solution such as the Routing and Remote Access Service (RRAS) in Windows Server 2012.
+Virtual network:
+The application in the cloud and the components of Azure VPN Gateway are in the same virtual network.
+Azure VPN Gateway:
+The VPN Gateway service allows you to connect the virtual network to the local area network using a VPN device. This service includes the following elements:
+Virtual network gateway: The resource that provides a virtual VPN device for the virtual network. It is responsible for routing traffic from the local area network to the virtual network.
+Local area network gateway: Abstraction of the local VPN device. Network traffic from the application in the cloud to the local area network is routed through this gateway.
+Connection: The connection has properties that specify the type of connection (IPSec) and the shared key with the local VPN device to encrypt traffic.
+Gateway subnet: The virtual network gateway is maintained on its own subnet.
+
+TOOLS: 
+Remote PC --> Root Cert, Client Cert, Win SDK, VPN Client.
+Azure VM: VPNGateway, Gateway Subnet
+
+1. CREATE GATEWAY SUBNET .
+2. CREATE VNET-GATEWAY - 30 MINS
+3. TAKE ANY REMOTE MACHINE - WIN10 ( WEST-US - VNET-WEST-US- 172.16.0.0/16 - SUBNET1- 172.16.0.4 )
+4. WIN10 - INSTALL SDK TOOL --- GIVES ME MAKECERT.EXE -  RUN 2 COMMANDS -  TWO CERTIFICATES - ROOT , CLIENT - 
+5. ROOT - EXPORT   - WITHOUT PRIVATE KEY
+6. CLIENT - EXPORT - WITH PRIVATE KEY
+7. CLIENT - INSTALL ON WIN-10 MACHINE
+8. ROOT - OPEN VIA NOTEPAD - THUMBPRINT - SINGLE LINE -* - COPY 
+9. GATEWAY - ENABLE POINT TO SITE - 
+ > 192.168.0.0/24 -VPN
+ > CERTIFACTE NAME -ROOT
+ > THUMBPRINT VALUE - PASTE
+ > SAVE - 10 SECONDS- NO ERROR .
+10. DOWNLOAD SCRIPT - POINT TO SITE PORTAL
+
+************SITE TO SITE******************* 
+A Site-to-Site VPN gateway connection is used to connect your on-premises network to an Azure virtual network over an IPsec/IKE (IKEv1 or IKEv2) VPN tunnel. This type of connection requires a VPN device located on-premises that has an externally facing public IP address assigned to it.
+Tools: Gateway Subnet, VPN Gateway, Local Network Gateway, Connections, Shared Key
+
+Requirements and Configuration: 
+1. RESOURCE GROUP1 > Region-East-Us
+VIRTUAL NETWORK1 > 10.0.0.0/16 > subnet ip=10.0.0.0/24 > Gateway subnet=10.0.1.0/24
+VIRTUAL NETWORK GATEWAY1 =public ip1(123.134.0.0)
+LOCAL NETWORK GATEWAY1 > remote machine ip ie vm2 ip(check in step 2)
+LOCAL NETWORK GATEWAY CONNECTIONS1
+VIRTUAL MACHINE1 > only private IP. Disable Public IP.
+
+2. RESOURCE GROUP2 > Region=West-Us
+VIRTUAL NETWORK2 > 192.168.0.0/16 > subnet ip=192.168.0.0/24
+VIRTUAL MACHINE2 
+> add roles--- Server roles >Remote Access
+> Role services->direct acces & VPN,Routing  > Install
+> Routing & remote acces
+Needed to Config VPN: 
+1. Shared key. This is the same shared key that you specify when creating your Site-to-Site VPN connection. 
+2. The Public IP address of your virtual network gateway1 of Azure
+3. VPN device configuration scripts
+ **** Ping VIRTUAL MACHINE1 using private IP from VIRTUAL MACHINE2. If you get reply then site-site connection is success.
+
+************ExpressRoute****************
+ExpressRoute lets you extend your on-premises networks into the Microsoft cloud over a private connection facilitated by a connectivity provider
+ExpressRoute connections do not go over the public Internet. This allows ExpressRoute connections to offer more reliability, faster speeds, consistent latencies, and higher security than typical connections over the Internet. 
+
+
+
+******************************************************************************************
+
+###############################Module 4: Azure Virtual Machines##############################
+
+Virtual Machine Extensions:
+Azure virtual machine (VM) extensions are small applications that provide post-deployment configuration and automation tasks on Azure VMs. 
+For example, if a virtual machine requires software installation, anti-virus protection, or to run a script inside of it, a VM extension can be used.
+To handle the extension on the VM, you need the Azure Windows Agent installed
+VM extensions also enable recovery features such as resetting the administrative password of a VM. 
+Azure VM agent:
+The Microsoft Azure Virtual Machine Agent (VM Agent) is a secure, lightweight process that manages virtual machine (VM) interaction with the Azure Fabric Controller. 
+The VM Agent has a primary role in enabling and executing Azure virtual machine extensions. VM Extensions enable post-deployment configuration of VM, such as installing and configuring software.
+
+
+********************************************************************************************
+
+#####################Module 5 : Network Traffic Management###################################
+
+Network Routing and Endpoints
+Azure Load Balancer
+The role of a load balancer is to improve the availability of services by distributing the load to
+a pool of back end servers. When it comes to load balancing, Azure has a few different
+products to choose from.
+• Azure Application Gateway – If you require a load balancer that can provide features such
+as SSL offloading, reverse proxy and works in the application layer (layer 7), Azure application
+gateway is the answer.
+• Azure Traffic Manager – If you are looking for DNS level load balancing which can distribute
+traffic to global endpoints, Azure traffic manager will be the product to look at.
+• Azure Load Balancer – Azure load balancer works in layer 4 (transport layer) and can
+distribute network traffic to endpoints in the same Azure region. It can use to distribute
+internet traffic as well as internal traffic. In this post, we are going to look into this service in
+detail.
+Azure load balancer also has the following components.
+• Frontend/Virtual IP address – This is the load balancer IP address that works as a front door
+to clients. After clients initiate connections to a frontend IP address, the traffic will be
+distributed to the back-end servers.
+• Backend pool – The back-end application servers will be group together in a pool to serve
+an incoming request from a load balancer.
+• Load Balancing Rules – The incoming traffic will be distributed to the backend servers
+according to the rules defined in the load balancer.
+• Health Probes – If a back-end server is down, load balancer needs to know. Then it can stop
+distributing traffic to the faulty server. The load balancer uses probs to detect the health of the
+back-end servers.
+• Inbound Port rules – Inbound rules in Network Security Group define how the traffic is
+forward from the load balancer to the back-end server.
+STEPS TO FOLLOW TO CREATE LOAD BALANCER:
+1. Create resource groups
+2. Create a virtual network
+3. Create a network security group
+4. Create a public IP Address
+5. Create a Load balancer
+• Create a Backend Pool
+• Create a Health Probes
+• Create a Load Balancing Rules
+6. Create a Two Virtual Machine
+7. Install IIS
+8. Test the Load Balancer
+
+Works only with VMs that are in the same region
+Only does Round Robin Uses a hash-based algorithm for distribution of inbound flows
+Works at the TCP/UDP level, routing traffic between one or more private endpoints that sit behind a public endpoint
+
+Azure Application Gateway
+Azure Application Gateway is a web traffic load balancer that enables you to manage traffic to your web applications.
+operate at the transport layer (OSI layer 4 - TCP and UDP) and route traffic based on source IP address and port, to a destination IP address and port.
+
+
+Traffic Manager
+Azure Traffic Manager is a DNS-based traffic load balancer that enables you to distribute traffic optimally to services across global Azure regions, while providing high availability and responsiveness.
+Traffic Manager uses DNS to direct client requests to the most appropriate service endpoint based on a traffic-routing method and the health of the endpoints.
+It works at the DNS level, “routing”** traffic between one or more public endpoints that sit behind a common DNS name
+It can work across regions
+Traffic Manager has several different policies:
+1.Latency. Direct to the "closest service"
+2.Round Robin. Distribute across all services
+3.Failover. Direct to backup if primary fails
+4.Nested. Flexible multi-level policies
+Routing method :
+1.Performance: It routes the traffic to the fastest responsive node.
+2.Priority: It routes the traffic to a specific node if the node goes down.
+3.Weighted: It routes the traffic based on the weight assigned to each node.
+4.Geographic: It routes the traffic to specific nodes based on the source location.
+5.Subnet: It routes the traffic to a specific node based on an IP address range.
+6.Multivalue: It routes the traffic to a specific number of nodes. It will return multiple IPv4 or IPv6 endpoints.
+Steps for Traffic Manager configuration:
+1.Create two VMs running a basic website on IIS
+2.Create two test VMs to view Traffic Manager in action
+3.Configure DNS name for the VMs running IIS
+4.Create a Traffic Manager profile for improved website performance
+Create a resource > Networking > Traffic Manager profile >Create.
+4.Add VM endpoints to the Traffic Manager profile
+Traffic Manager profile, in the Settings section, click Endpoints
+5.View Traffic Manager in action
+
+https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-how-it-works
+
+DIFF BETWEEN LOAD BALANCER vs Application GATEWAY VS Traffic Manager:
+Azure Load Balancer: works at the transport layer (Layer 4 in the OSI network reference stack). 
+It provides network-level distribution of traffic across instances of an application running in the same Azure data center.
+Works only with VMs that are in the same region
+Works at the TCP/UDP level, routing traffic between one or more private endpoints that sit behind a public endpoint
+
+Application Gateway: works at the application layer (Layer 7 in the OSI network reference stack).
+It acts as a reverse-proxy service, terminating the client connection and forwarding requests to back-end endpoints.
+
+Traffic Manager: works at the DNS level. 
+It uses DNS responses to direct end-user traffic to globally distributed endpoints. 
+Clients then connect to those endpoints directly.
+It works at the DNS level, “routing”** traffic between one or more public endpoints that sit behind a common DNS name
+It can work across regions
+
+
+
+Lab : Implementing web apps
+1.	Demo 1- Create and Configure Azure Web-App Via Portal 
+2.	Demo 2- Configure Traffic Manager
+
+****************************************************************************************
+
+#################Module 6 : Azure Storage#############################
+
+AZURE STORAGE
+Four Types
+1. Blob 
+2. File
+3. Queue
+4. Tables
+
+1.Blob Storage:
+Massively scalable object store for text and binary data
+Ideal for
+Serving images or documents to a browser like s3
+Streaming Video and audio
+Store data for backup and restore, archiving
+Storing files for distributed access
+
+
+Blobs are seperated into containers. Each container have file or files
+Blob storage Access Tier:
+Azure storage provides option for accessing block blob data
+1. Hot: For frequent access of objects
+2. Cool: Optimized for storing large amount of data that is infrequently accessedand stored for at least 30days
+3. Archive (Cheap): Optimized for data that can tolerate several hours of retrieval latency and will remain in the Archive tier for atleast 180 days
+
+*** Note: Blob Soft Delete is a option where we get versioning for all opertions. Even after delete we can get back them using versions.
+
+2.FILE STORAGE:
+Managed file shares for cloud or on-premises deployments.
+File storage are seperated into Shares. Each Share has a file or files and folders
+FileStorage is like creating of disk on a local machine where we can store data that is copied to that drive in Azure storage.
+Like backup drive where files are stored. Using SMB 3.0 method.
+Process: Create File Service > Click on created File Service one > Connect > Copy the connect code.
+It contains address of server + User Name + Key/Password
+After drive letters: is Address of server Ex: \\abcdemo.file.core.windows.net\myfile
+After /u: is User name and Key  Ex: /u:Azure\abcdemo wekfwwoIbcdsofOHJp:]DDSPDDCCODC.....
+
+My computer > right click on This PC > Map Network Drive > Assign Drive letter > Folder > Finish > Enter Username and Password(Key). > OK
+We can see a new drive in MYcomputer.
+
+
+3.STORAGE QUEUE:
+A messaging store for reliable messaging between application components.
+Storage ques are separated into Queues. Each queues consists of Messages.
+
+4.TABLE STORAGE:
+A NoSQL store for schemaless storage of structurd data
+Storage Tables seperated into Tables. Each Table is divided into Rows and Columns of Data.
+
+Storage Performancce Tier:
+1.Standard Performance Tier: For storing blobs, files, tables, queues and Azure virtual machine disks
+2.Premium Performance Tier: For storing unmanaged virtual machine disks only
+
+Data Redundancy:
+1.Local-redundant Storage (LRS): One Location one datacenter with replication in same datacenter
+2.Zone redundant Storage (ZRS): Different zones in one region with replications in all the zones
+3.Geo redundant storage (GRS): Different regions with replication in different regions.
+4.Read-access geo redundant storage (RA-GRS): Different regions with replication in different regions. But Replication region has only read acces.
+
+Manage storage with tools such as Storage Explorer.
+
+*******************************************************************************************
+Module 7: Identity
+
+AZ AD Connect Scenario:
+1. Password-Hash Sync -- 2 authentication AZAD and On permises
+2. ADFS- sso -- 1 Authenticate ON PREMISES using ADO
+3. Pass-Through
+
+Creating and managing Azure AD tenants
+Configuring application and resource access with Azure AD
+Overview of Azure AD Premium
+Lab : Implementing Azure AD
+1.	Demo-1 Administering Azure AD and Premium AD .
+2.	Demo-2 Azure AD Application Proxy and Other Premium features.
+After completing this module, students will be able to:
+
+Create and manage Azure AD tenants.
+Configure SSO for cloud applications and resources and implement RBAC for cloud resources.
+Explain the functionality of Azure AD Premium and implement Azure Multi-Factor Authentication.
+
+
+*******************************************************************************************
+
+Module 8 : Managing an Active Directory infrastructure in a hybrid environment 
+This module explains how to manage Active Directory in a hybrid environment. It explains how to extend an on-premises Active Directory domain to Azure infrastructure as a service (IaaS) environments and synchronize user, group, and computer accounts between on-premises AD DS and Azure AD. This module also explains how to set up SSO by using federation and pass-through authentication between on-premises Active Directory and Azure AD.
+Lessons
+Extending an on-premises Active Directory domain to Azure IaaS
+Implementing directory synchronization by using Azure AD Connect
+Implementing SSO in hybrid scenarios
+Lab: Implementing and managing Azure AD synchronization
+1.	Configuring directory synchronization
+2.	Synchronizing directories
+3.	Configuring SSO With Cloud Application Eg-O-365 (Only Trainer will Show this Demo)
+After completing this module, students will be able to:
+
+Extend an on-premises Active Directory domain to Azure IaaS environments.
+Synchronize user, group, and computer accounts between on-premises AD DS and Azure AD.
+Set up SSO by using federation and pass-through authentication between on-premises Active Directory and Azure AD.
+
+
+********************************************************************************************
+
+##########################Module 9 : Data Protection###################################
+
+AZURE  BACKUP VAULT:
+MARS-Microsoft Azure Recovery Services (MARS) Agent can do two things:
+1.Restore data to the same machine from which the backups were taken.
+2.Restore data to an alternate machine.
+LAB:File and Folder Backups
+>>>BACKUP VAULT> SELECT BACKUP > ON PREMISES >SELECT FILE AND FOLDER AS EXAMPLE > PREPARE THE SERVER > 
+DOWNLOAD OPTION 1 AND 2 == 1 IS AGENT & 2 IS CREDENTIAL.
+>>>RUN AZURE BACKUP EXE > START BACKUP SCHEDULE > FILES> SELECT IMPORTANT FOLDER AND FINISH THE WIZARD >
+LAB2: Virtual Machine Backups: 
+tool: Recovery Services vaults
+A backup extension is installed on the VM if the VM is running.
+    For Windows VMs, the VMSnapshot extension is installed.
+    For Linux VMs, the VMSnapshotLinux extension is installed.
+After Backup takes the snapshot, it transfers the data to the vault.
+
+
+******************************************************************************************
+
+########################Module 10 : Monitoring########################################
+
+
+Azure Monitor collects metrics and logs. 
+Metric Explorer show all the graphical data
+Log data collected by Azure Monitor can be analyzed with queries
+Log Analytics in the Azure portal for log support
+It Monitors Application monitoring data, Guest OS monitoring data, Azure resource monitoring data, Azure subscription monitoring data
+Metrics tell you how the resource is performing and the resources that it's consuming.
+Metrics > Select resource group, >Which Resource> Which metrics
+Set alert rule> Scope > Condition > Action > Done
+
+Network Watcher
+Azure Network Watcher provides tools to monitor, diagnose, view metrics, and enable or disable logs for resources in an Azure virtual network.
+Network Watcher is designed to monitor and repair the network health of IaaS 
+
+*******************************************************************************************
+
+##############Module 11: Governance and Compliance######################################
+
+Role-based Access Control (RBAC)
+RBAC, a user is denied access to all resources and access need to be granted explicitly. 
+Access can be granted to specific users or groups at various levels within an Azure Subscription. 
+RBAC permissions can be applied at component, resource group, or full subscription-level. 
+Three main component-specific roles are:
+1. Owner: Owner have full-access to all resources and permissions to delegate access to other users as well
+2. Contributor:  Contributor has all the permissions an owner has. But do not have the permissions to grant access to other users
+3. Reader: Reader role allows a user read-only access to the Azure resources
+*** RBAC’s role is to grant the rights to your users to implement and manage the top-level Azure resources, they do not restrict users within the resource types.
+
+Azure Policy:
+Policies are sets of rules that specify what can and cannot be created in either a single resource group or a full subscription.
+Policies by default allow you to do anything within the subscription or resource group.
+Built-in policies within Azure which can be configured and applied to the appropriate resource group or subscription.
+Ex: AZURE POLICY TO ALLOW SPECIFIC VM SIZE SKU
+
+RBAC is used to set the high-level permissions for users and groups to access specific resource types. 
+Policies add the additional layer of protection and auditing by ensuring only approved locations and SKUs are used.
+
+Lab : Manage Governance via Azure Policy
+POLICY > Authoring Section --Definitions > + Initiative Definition > Definition location > Filter > + to add > Set-Values > Save
+https://techcommunity.microsoft.com/t5/itops-talk-blog/governance-101-the-difference-between-rbac-and-policies/ba-p/1015556
+
+
+
+********************************************************************************************
+
+######################Module 12: Azure SQL Database###################################
+
+Planning and deploying Azure SQL Database
+Azure SQL Database vs Azure SQL on VM
+PRICE:
+In SQL Server on Azure VMs, the price depends on the number of Cores and the SQL Edition. SQL Enterprise Edition, SQL Standard Edition and SQL Web Edition of which Enterprise edition is the most expensive.
+In Azure SQL Database, the prices depend on the Database Size and the DTUs. The DTU is the Data Transaction Unit, which measures the number of transactions supported per second in stress conditions.
+LEARN:
+The VM Machine in Azure is as difficult as a local machine. You need to work on the OS Administration as well as the traditional DBA tasks.
+QL Azure Database is a simple database. You do not need to worry about the Administration of the Database.
+SECURE:
+The VM Machine in Azure is more secure than the SQL Azure Database because you can configure and restrict the IPs that access to the VM Machines
+In SQL Azure Database, if you have the credentials you can basically stole all the information from any device by default.
+Access:
+The VM Machine in Azure can be accessed from any RDP and it has to be instslled if not present.
+If you have a browser, you can create, delete or administer your database. The connection is a straightforward process.
+DB SIZE:
+In the virtual machines in Azure, the maximum size in VMs above 12TB.
+The maximum size supported in Azure SQL Database is 1 TB. 
+Speed:
+SQL Server on Azure Virtual Machine is much faster than  Azure SQL database
+Azure SQL database is slightly slower than SQL Server on Azure Virtual Machine (in Standard Tier).
+BACKUP:
+Regarding SQL Server on Azure Virtual Machine, there is support available for automated backup and patching
+Where as we can have Geo location replication, Backup in Azure SQL DB
+
+When to use SQL Server on Azure Virtual Machines
+SQL Server on Azure Virtual Machines gives you the benefit of complete control over the SQL Server instance and underlying operating system. This option uses full versions of SQL Server, and you have full administrative rights to the SQL Server engine.
+your existing or new applications require large databases
+your existing or new applications require access to all features in SQL Server or Windows/Linux
+you want to avoid the time and expense of acquiring new on-premises hardware
+you want to migrate existing on-premises applications and databases to Azure 
+then SQL Server Virtual Machines are a good fit for your use case.
+
+
+SQL DATABASE:
+Relational DB are Perfect in managing structured data via 1. Schema, 2. Constraints, 3. Relationships
+It also includes rich query capability
+Azure offers three deployment models
+1. Single SQL DB fully managed and isolated
+2. Elastic Pool collection of single databases with shared set of resources
+3. SQL Managed instance is a fully managed instace of sql server
+
+Purchasing or Pricing Model:
+1. DTU based model
+2. VCore based model
+3. Serverless Vcore model
+
+Elastic POOL:
+Sharing of Multiple databases
+
+Serverless 
+AVG vcore used. Set min vcore to use. When where there is not usuage turn off the database.
+
+Sql DB offers
+1. Automatic Backup
+2. Point-in-time restores
+3. Active geo replications
+4. Auto failover groups
+5. Zone-redundant datadases
+
+
+
+*********************************************************************************************
+
+#######################Module 13- Migration Scenarios Via Azure Migrate#####################
+Lab1 – On-premises Hyper-V Server to Azure.
+Lab2 – On-premises Physical Server to Azure .
+
+SCENERIOS
+1. Hyper-v Server to Azure
+2. VMware server to Azure
+3. Physical Server to Azure
+
+Phases of MIGRATION
+1. Preparation --- On premises work like setup of Hyperv, create PROD VM,Assign NAT for internet.
+2. Assessment Report --- On Azure. Report suggests the size of VM, Location, Load etc. Health ans Security.
+3. Replicate --- Sync and Replicate Physical machine to Azure VMs (which gets added to VM list)
+4. Test failover -RDP of migrated server  --- to validate your replication and disaster recovery strategy, without any data loss or downtime
+5. Delete test Failover --- This will delete the Physical VM.
+6. Cut-over -- Azure VM will be ready --- No connecction between On prem and Azure. 
+
+Migration TOOLS
+1. ASR- Azure site RECOVERY -- No Assessment is generated. Only replication and recovery is done
+2. Azure Migrate  --- It DO Assessment 
+
+
+********************************************************************************************

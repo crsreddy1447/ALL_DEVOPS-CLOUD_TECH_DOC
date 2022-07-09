@@ -1,0 +1,164 @@
+Code Quality:
+--------------
+Code Analysis Using Sonar Qube:(Through Portal)
+------------------------------
+1)Goto Organisation Setting -> click on Extensions -> click on Browse marketplace at rightside top -> click on Sonar Qube under Azure pipelines
+	-> click on Get it free -> click on Install -> click on Proceed to Organisation (it will navigate to ur organisation)
+2)Goto pipelines of your project -> Edit the pipeline 	
+3)click on plus(+) symbol at Agent job1 and search for 'sonar' in search bar of Add Tasks
+4)Select Prepare analysis configuration in display list and click on Add 
+Note: It is Sonar Begin, it should place top of all tasks
+5)click on 'Prepare analysis configuration' and enter the below details	
+		- Display Name : Prepare analysis on SonarQube
+		- SonarQube Server Endpoint : click on New and enter the below details
+				- Server url : http://<ipaddress>:9000 (Give ur sonarqube url)
+				- Token : *********************** To get this token -> login to SonarQube url -> click on Administation tab -> click on Secuiruty -> select users -> click on 3lines(upgrade tokens) under Tokens
+											-> Enter the token name -> click on Generate -> copy the token and paste at Token in SonarQube Server Endpoint
+		 		- Service Connection Name : sonar 
+				- click on save
+		- choose the way to run the analysis : Integrate with MSBuild
+		- Project key : smartstore
+		- Projet Name : smartstore
+		- Project Version : 1.0
+6)click on plus(+) symbol at Agent job1 and search for 'run' in search bar of Add Tasks
+7)Select Run code analysis  in display list and click on Add
+Note: It is Sonar End, it should place after unit test cases
+8)click on 'Run code analysis' and no need to change anything
+9)click on Save & Queue -> click on Save and Run 
+
+After Job completed:
+To check the background tasks of project -> click on Administation -> Click on Projects -> select background tasks (here will see the background task and its status)
+To check the report of the code Analysis -> login to SonarQube -> click on Projects tab(Here we will see all the Bugs, Vulnerabilities, Code Smells etc of our project)
+
+Code Analysis Using Sonar Qube:(Through Powershell)
+------------------------------
+1)Download the sonarscanner.msbuild and placed in c drive or install through chocolatey using below command
+	choco install sonarscanner-msbuild-net46
+2)open powersell in adminstrator mode 
+3)change directory to the project folder cd C:\GitProjects\Traditional\SmartStoreNET
+4)To start the sonar begin, run the below command in powersell
+	C:\sonar-scanner-msbuild\SonarScanner.MSBuild.exe begin /k:"smartstore" /v:"1.0" /n:"smartstore"
+5)To retsore dependencies in project, run the below command
+	nuget.exe restore .\src\SmartStoreNET.sln
+6)To Build the project, run the below command
+	MSBuild.exe .\src\SmartStoreNET.sln -t:build -p:configuration="release" -p:platform="any CPU"
+7)To start the sonar end, run the below command
+	C:\sonar-scanner-msbuild\SonarScanner.MSBuild.exe end
+	
+Cloud Native Application:
+------------------------
+Code Analysis Using Sonar Qube:(Through Portal)
+-------------------------------
+1)Goto pipelines of your project -> Edit the pipeline 	
+2)click on plus(+) symbol at Agent job1 and search for 'sonar' in search bar of Add Tasks
+3)Select Prepare analysis configuration in display list and click on Add 
+Note: It is Sonar Begin, it should place top of all tasks
+4)click on 'Prepare analysis configuration' and enter the below details	
+		- Display Name : Prepare analysis on SonarQube
+		- SonarQube Server Endpoint : click on New and enter the below details
+				- Server url :  http://<ip address>:9000  (Give ur sonarqube url)
+				- Token : ************************* To get this token -> login to SonarQube url -> click on Administation tab -> click on Secuiruty -> select users -> click on 3lines(upgrade tokens) under Tokens
+											-> Enter the token name -> click on Generate -> copy the token and paste at Token in SonarQube Server Endpoint
+		 		- Service Connection Name : sonarQube 
+				- click on save
+		- choose the way to run the analysis : Integrate with MSBuild
+		- Project key : eShop
+		- Projet Name : eShop
+		- Project Version : 1.0 
+5)Add Tasks -> search .Net Core -> click on Add and enter the below commands
+		- Command : restore
+		- Path to Proect(s) : **/*.csproj
+6)Add Tasks -> search .Net Core -> click on Add and enter the below commands
+		- Command : build
+		- Path to Proect(s) : **/*.csproj
+		- Arguements : -c "Release"
+7)Add Tasks -> search .Net Core -> click on Add and enter the below commands
+		- Command : test
+		- Path to Proect(s) : **/*.csproj
+		- Arguements : --collect "Code coverage"
+8)Add Tasks -> search .Net Core -> click on Add and enter the below commands
+		- Command : publish
+		- Path to Proect(s) : **/*.csproj
+		- Arguements : -c "Release" -o $(Build.artifactstagingDirectory)
+9)click on plus(+) symbol at Agent job1 and search for 'run' in search bar of Add Tasks
+10)Select Run code analysis  in display list and click on Add
+Note: It is Sonar End, it should place after unit test cases
+11)click on 'Run code analysis' and no need to change anything
+12)Add Tasks -> Search 'Publish Pipeline Artifact' -> click on Add and enter the below commands
+		- File or directory path : $(Build.ArtifactstagingDirectory)
+		- Artifact name : Packages
+		- Artifact publish location : Azure Pipelines
+13)click on Save & Queue -> click on Save and Run 
+
+Failure Cases:
+-------------
+-some of the application build  at Run Code Analysis -> because of duplicate project guid
+-we need to create unique guid for each individual project in Application 
+-goto repos ->src -> Application core -> ApplicationCore.csproj -> edit -> under project group -> write below code
+<projectGuid>{**********guidid********}</projectGuid> -> click on Commit
+-Do the same for all projects under this application
+
+Note: For Creating Guid, open powersell as adminstrator and run the below command
+		[guid]::NewGuid()
+14)Re-run the job
+
+UI Based Application:
+---------------------
+Angular Project:
+----------------
+Code Analysis Using Sonar Qube:(Through Portal)
+-------------------------------
+1)Goto Repos -> Importing Repository -> clone the code into Repos
+2)Goto Pipelines -> Create Pipeline 
+3)Add Tasks -> Search 'npm' -> click on Add and enter the below commands
+		- Command : Custom
+		- Command and Arguements : install -g sonarqube-scanner
+4)click on plus(+) symbol at Agent job1 and search for 'sonar' in search bar of Add Tasks
+5)Select Prepare analysis configuration in display list and click on Add 
+Note: It is Sonar Begin, it should place top of all tasks
+6)click on 'Prepare analysis configuration' and enter the below details	
+		- Display Name : Prepare analysis on SonarQube
+		- SonarQube Server Endpoint : click on New and enter the below details
+				- Server url : http://<ip address>:9000 (Give ur sonarqube url)
+				- Token : *********************** To get this token -> login to SonarQube url -> click on Administation tab -> click on Secuiruty -> select users -> click on 3lines(upgrade tokens) under Tokens
+											-> Enter the token name -> click on Generate -> copy the token and paste at Token in SonarQube Server Endpoint
+		 		- Service Connection Name : sonarQube 
+				- click on save
+		- choose the way to run the analysis : Integrate with MSBuild
+		- Project key : Angular9
+		- Projet Name : Angular9
+		- Project Version : 1.0 
+7)Add Tasks -> Search 'npm' -> click on Add and enter the below commands
+		- Command : install
+8)Add Tasks -> Search 'npm' -> click on Add and enter the below commands
+		- Command : Custom
+		- Command and Arguements : run builds:prod
+9)Add Tasks -> Search 'npm' -> click on Add and enter the below commands
+		- Command : Custom
+		- Command and Arguements : run test	
+10)click on plus(+) symbol at Agent job1 and search for 'run' in search bar of Add Tasks
+11)Select Run code analysis  in display list and click on Add
+Note: It is Sonar End, it should place after unit test cases
+12)click on 'Run code analysis' and no need to change anything
+13)Add Tasks -> Search 'Publish Pipeline Artifact' -> click on Add and enter the below commands
+		- File or directory path : $(Build.ArtifactstagingDirectory)
+		- Artifact name : Packages
+		- Artifact publish location : Azure Pipelines
+14)click on Save & Queue -> click on Save and Run 
+
+Code Analysis Using Sonar Qube:(Through Powershell)
+------------------------------
+1)open powersell as adminstrator -> change directory to project location run the below command to clone the application
+	git clone <url>
+2)Run the below command for project initializtion
+	npm.cmd i
+Note: Here 'i' is installer
+3)After running above command, we will see node_modules folder at project level
+4)Run the below command for build libraries
+	npm run build:library
+5)Run the below command for build the project, here we need to mention environment(ex:dev,test, prod etc)
+	npm run builds:prod
+6)Run the below command for test cases(It will include code coverage also)
+	npm run test
+7)Run the below command for running end to end test cases
+	npm run e2e
